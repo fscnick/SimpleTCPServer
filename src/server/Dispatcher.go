@@ -1,7 +1,7 @@
 package main
 
-import "fmt"
-import "time"
+// import "fmt"
+// import "time"
 
 type ConnectionHandler func(ctx *Context)
 
@@ -51,24 +51,18 @@ func (d *Dispatcher) dispatch() {
 	for {
 		select {
 		case job, ok := <-d.jobQueue:
-			if ok  != true {
+			if ok != true {
 				// TODO: chan is closed.
 				return
 			}
-			// try to obtain a worker job channel that is available
-			fmt.Println("Get job from queue.")
+
 			// TODO:  non-blocking
 			jobChannel = <-d.workerPool
 
-			// dispatch the job ot worker
-			fmt.Println("Dispatch job to worker")
-			// TODO: non-blocking
 			jobChannel <- job
-
-		default:
-			// TODO: handle default
-			time.Sleep(time.Millisecond)
 		}
+		
+		
 	}
 }
 
@@ -87,8 +81,10 @@ func newWorker(workerPool chan chan Job, id int) *Worker {
 func (w Worker) start() {
 	go func() {
 		for {
+			// Worker is ready. Register to workerPool
 			w.workerPool <- w.jobChannel
 
+			// This is blocking channel.
 			select {
 			case job := <-w.jobChannel:
 				
