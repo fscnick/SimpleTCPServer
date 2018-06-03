@@ -30,7 +30,22 @@ func (p *ResourcePoolWrapper) InitPool(size int, initfn InitFunction) error {
 }
 
 func (p *ResourcePoolWrapper) GetResource() interface{} {
-	return <-p.conn
+
+	select {
+	case resource, ok := <- p.conn:
+		if ok != true {
+			// Channel closed
+			return nil
+		} 
+
+		return resource
+
+	default:
+		// No resource ready.
+		return nil
+	}
+	return nil
+	//return <-p.conn
 }
 
 func (p *ResourcePoolWrapper) ReleaseResource(conn interface{}) {
