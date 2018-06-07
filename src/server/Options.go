@@ -16,4 +16,6 @@ type Options struct {
 	// String
 	listen				string
 	to 					string
+	httpListenAddr		string
+	statusPath			string
 }

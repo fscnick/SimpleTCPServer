@@ -180,6 +180,7 @@ func sendToBackend(context *Context) {
 			goto DISCONNECTION
 		}
 
+		// TODO: should we consider reading more than once.
 		nn, err := conn.Read(buff)
 		if err != nil {
 			fmt.Println("Read fail: ", err)
@@ -194,7 +195,7 @@ func sendToBackend(context *Context) {
 			goto DISCONNECTION
 		}
 
-		fmt.Println("Recv content", buff[:nn])
+		// fmt.Println("Recv content", buff[:nn])
 
 		isValid := isValidText(buff[:nn])
 		if isValid != true {
@@ -304,7 +305,7 @@ func isValidText(input []byte) bool {
 
 func isQuit(input []byte) bool {
 	ss := UnsafeBytesToString(input[:]) 
-	if ss == "quit\n" {
+	if ss == "quit" {
 		return true
 	}
 
