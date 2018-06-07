@@ -1,26 +1,45 @@
+
 # Simple TCP Server
 
+This is a simple forward server. Transfer the received text to external server wrapped with HTTP . It also provides API for querying server status.
+
+  
 
 ## Build
-`gb build`
 
-## Run 
-`./bin/server -h` to check default config and provide config.
+Enviroment: go version go1.9.4 linux/amd64
 
-`./bin/server` run server.
+  
+Build command: `gb build`
 
+  
+
+## Run
+
+*`./bin/server -h` 
+Check default config and provide config.
+
+*`./bin/server` 
+  Run server. Serve a TCP server receiving text from client and transfer the text wrapped with HTTP to external API server. Also, serve HTTP on another port for investigating the current status.
 
 ## Test
-`nc 127.0.0.1 8080` Connect to server. Note the input contains '\n' at the end of string. Use `printf 'quit'|nc 127.0.0.1 8080` instead.
 
-`nc -kl 18080 -c 'echo -e "HTTP/1.1 200 OK\r\n$(date)\r\n\r\n"'` Simple http server for mocking external API.
+Choose the way preferred.
 
-`./bin/mock_external`
+* `nc 127.0.0.1 8080` 
+Connect to server. 
+Note: the input contains '\n' at the end of string. Use `printf 'quit'|nc 127.0.0.1 8080` instead.
+
+
+* `./bin/mock_external` 
+  Mock external API. 
+
+  
 
 ## TODO
+
+* ~~mock external~~
 
 * mock client
 
 * escape quit
-
-* 
