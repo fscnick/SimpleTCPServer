@@ -37,7 +37,7 @@ func (p *ResourcePoolWrapper) GetResource() interface{} {
 			// Channel closed
 			return nil
 		} 
-
+		
 		return resource
 
 	default:
@@ -50,4 +50,13 @@ func (p *ResourcePoolWrapper) GetResource() interface{} {
 
 func (p *ResourcePoolWrapper) ReleaseResource(conn interface{}) {
 	p.conn <- conn
+}
+
+func (p *ResourcePoolWrapper) getFreeRescourceCount() int {
+	return len(p.conn)
+}
+
+func (p *ResourcePoolWrapper) getUsedRescourceCount() int {
+	// TODO: This might be a good implementation. Make it better.
+	return p.size - len(p.conn)
 }

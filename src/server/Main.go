@@ -26,6 +26,8 @@ func parseArguments() {
 
 	flag.StringVar(&opts.listen, "listen", ":8080", "The address to listening.")
 	flag.StringVar(&opts.to, "to", "http://127.0.0.1:18080/", "The url forward to external api.")
+	flag.StringVar(&opts.httpListenAddr, "http", ":11235", "The listening address used by http server.")
+	flag.StringVar(&opts.statusPath, "statusPath", "status", "The path is use to show the server status.")
 
 	flag.Parse()
 
@@ -59,15 +61,26 @@ func main() {
 		os.Exit(1)
 	}
 
+	err = initManager(opts)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Init Manager fail: %s\n", err.Error())
+	}
+
 	err = initServer(opts)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Init fail: %s\n", err.Error())
+		fmt.Fprintf(os.Stderr, "Init Server fail: %s\n", err.Error())
+		os.Exit(1)
+	}
+
+	err = startManagerServer()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error at starting manager: %s\n", err.Error())
 		os.Exit(1)
 	}
 
 	err = serve()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Start server fail: %s\n", err.Error())
+		fmt.Fprintf(os.Stderr, "Error at starting server: %s\n", err.Error())
 		os.Exit(1)
 	}
 
