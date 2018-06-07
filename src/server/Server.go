@@ -1,6 +1,7 @@
 package main
 
 import "os"
+import "io"
 import "fmt"
 import "net"
 import "time"
@@ -28,6 +29,7 @@ var MSG_TEMP_UNAVAILABLE = []byte("Temporary unavailable.")
 var MSG_SERVER_ERROR = []byte("Server Error.")
 var MSG_INVALID_INPUT = []byte("Invalid input.")
 var MSG_BACKEND_BUSY = []byte("Backend busy.")
+var MSG_BACKEND_ERROR = []byte("Backend error.")
 var MSG_OK = []byte("OK.")
 var MSG_QUIT = []byte("Bye bye.")
 
@@ -131,6 +133,7 @@ func serve() error {
 			// TODO: log something
 			conn.Write(MSG_SERVER_ERROR)
 			conn.Close()
+			jobPool.ReleaseResource(job)
 			continue
 		}
 
@@ -174,15 +177,24 @@ func sendToBackend(context *Context) {
 		if err != nil {
 			fmt.Println("Set timeout fail: ", err)
 			// TODO: notify client if possible
-			return
+			goto DISCONNECTION
 		}
 
 		nn, err := conn.Read(buff)
 		if err != nil {
 			fmt.Println("Read fail: ", err)
 			// TODO: notify client if possible
-			return
+
+			if err ==  io.EOF {
+				fmt.Println("Recieve dissconnection.")
+				
+				goto DISCONNECTION
+			}
+
+			goto DISCONNECTION
 		}
+
+		fmt.Println("Recv content", buff[:nn])
 
 		isValid := isValidText(buff[:nn])
 		if isValid != true {
@@ -190,7 +202,7 @@ func sendToBackend(context *Context) {
 			_, err := conn.Write(MSG_INVALID_INPUT)
 			if err != nil {
 				fmt.Println("Write fail:", err)
-				return
+				goto DISCONNECTION
 			}
 			// TODO: drain unread
 			continue
@@ -202,8 +214,10 @@ func sendToBackend(context *Context) {
 			_, err := conn.Write(MSG_QUIT)
 			if err != nil {
 				fmt.Println("Write fail:", err)
-				return
+
 			}
+
+			goto DISCONNECTION
 
 			return
 		}
@@ -216,10 +230,11 @@ func sendToBackend(context *Context) {
 			_, err := conn.Write(MSG_SERVER_ERROR)
 			if err != nil {
 				fmt.Println("Write fail:", err)
-				return
+				
+				goto DISCONNECTION
 			}
 
-			return
+			goto DISCONNECTION
 		}
 
 		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
@@ -229,14 +244,13 @@ func sendToBackend(context *Context) {
 			fmt.Println("Send POST fail:", err)
 
 			// TODO: maybe use another message instead of MSG_BACKEND_BUSY
-			_, err := conn.Write(MSG_BACKEND_BUSY)
+			_, err := conn.Write(MSG_BACKEND_ERROR)
 			if err != nil {
 				fmt.Println("Write fail:", err)
-				return
+				goto DISCONNECTION
 			}
 
-			// TODO: drain unread
-			continue
+			goto DISCONNECTION
 		}
 		
 		// For simplicity.
@@ -246,7 +260,7 @@ func sendToBackend(context *Context) {
 			_, err := conn.Write(MSG_BACKEND_BUSY)
 			if err != nil {
 				fmt.Println("Write fail:", err)
-				return
+				goto DISCONNECTION
 			}
 
 			// TODO: drain unread
@@ -259,13 +273,20 @@ func sendToBackend(context *Context) {
 		if err != nil {
 			fmt.Println("Write fail:", err)
 			resp.Body.Close()
-			return
+			goto DISCONNECTION
 		}
 
 		// TODO: if return length is not equal the MSG_OK.
 
 
 		resp.Body.Close()
+	}
+
+DISCONNECTION:
+	fmt.Println("Ready to close connection.")
+	err := conn.Close()
+	if err != nil {
+		fmt.Println(err)
 	}
 
 }
@@ -283,7 +304,7 @@ func isValidText(input []byte) bool {
 
 func isQuit(input []byte) bool {
 	ss := UnsafeBytesToString(input[:]) 
-	if ss == "quit" {
+	if ss == "quit\n" {
 		return true
 	}
 
@@ -291,7 +312,7 @@ func isQuit(input []byte) bool {
 }
 
 func charChecker(r rune) bool {
-	return 	r < ' ' || r > '~'
+	return 	(r < ' ' && r != '\n') || r > '~'
 }
 
 func UnsafeBytesToString(b []byte) string {

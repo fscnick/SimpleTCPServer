@@ -1,6 +1,6 @@
 package main
 
-// import "fmt"
+ import "fmt"
 // import "time"
 
 type ConnectionHandler func(ctx *Context)
@@ -90,8 +90,8 @@ func (w Worker) start() {
 				
 				job.fn(job.data)
 				
-				jobPool.ReleaseResource(job)
-
+				jobPool.ReleaseResource(&job)
+				fmt.Println("Release job to pool")
 			case <-w.quit:
 				// we have recieved a signal to stop
 				// TODO: log something
