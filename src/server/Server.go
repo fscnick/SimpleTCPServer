@@ -25,13 +25,13 @@ var regexValidator *regexp.Regexp
 
 var dispatcher *Dispatcher
 
-var MSG_TEMP_UNAVAILABLE = []byte("Temporary unavailable.")
-var MSG_SERVER_ERROR = []byte("Server Error.")
-var MSG_INVALID_INPUT = []byte("Invalid input.")
-var MSG_BACKEND_BUSY = []byte("Backend busy.")
-var MSG_BACKEND_ERROR = []byte("Backend error.")
-var MSG_OK = []byte("OK.")
-var MSG_QUIT = []byte("Bye bye.")
+var MSG_TEMP_UNAVAILABLE = []byte("Temporary unavailable.\n")
+var MSG_SERVER_ERROR = []byte("Server Error.\n")
+var MSG_INVALID_INPUT = []byte("Invalid input.\n")
+var MSG_BACKEND_BUSY = []byte("Backend busy.\n")
+var MSG_BACKEND_ERROR = []byte("Backend error.\n")
+var MSG_OK = []byte("OK.\n")
+var MSG_QUIT = []byte("Bye bye.\n")
 
 func initServer(opts Options) error {
 	listenAddr = opts.listen
