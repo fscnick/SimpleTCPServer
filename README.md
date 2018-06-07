@@ -16,10 +16,10 @@ Build command: `gb build`
 
 ## Run
 
-*`./bin/server -h` 
+* `./bin/server -h` 
 Check default config and provide config.
 
-*`./bin/server` 
+* `./bin/server` 
   Run server. Serve a TCP server receiving text from client and transfer the text wrapped with HTTP to external API server. Also, serve HTTP on another port for investigating the current status.
 
 ## Test
